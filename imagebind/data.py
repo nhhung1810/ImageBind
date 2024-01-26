@@ -5,6 +5,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+from copy import deepcopy
 import logging
 import math
 
@@ -83,9 +84,7 @@ def load_and_transform_vision_data(image_paths, device):
 
     data_transform = transforms.Compose(
         [
-            transforms.Resize(
-                224, interpolation=transforms.InterpolationMode.BICUBIC
-            ),
+            transforms.Resize(224, interpolation=transforms.InterpolationMode.BICUBIC),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(
@@ -94,7 +93,7 @@ def load_and_transform_vision_data(image_paths, device):
             ),
         ]
     )
-    
+
     for image_path in image_paths:
         with open(image_path, "rb") as fopen:
             image = Image.open(fopen).convert("RGB")
@@ -298,10 +297,10 @@ def load_and_transform_video_data(
     video_transform = transforms.Compose(
         [
             pv_transforms.ShortSideScale(224),
-            NormalizeVideo(
-                mean=(0.48145466, 0.4578275, 0.40821073),
-                std=(0.26862954, 0.26130258, 0.27577711),
-            ),
+            # NormalizeVideo(
+            #     mean=(0.48145466, 0.4578275, 0.40821073),
+            #     std=(0.26862954, 0.26130258, 0.27577711),
+            # ),
         ]
     )
 
@@ -332,9 +331,19 @@ def load_and_transform_video_data(
             all_video.append(video_clip)
 
         all_video = [video_transform(clip) for clip in all_video]
+        _tmp = deepcopy(all_video)
         all_video = SpatialCrop(224, num_crops=3)(all_video)
 
         all_video = torch.stack(all_video, dim=0)
         video_outputs.append(all_video)
 
-    return torch.stack(video_outputs, dim=0).to(device)
+    return torch.stack(video_outputs, dim=0).to(device), _tmp
+
+
+if __name__ == "__main__":
+    video_path = "./datasets/AVIClips/actionclipautoautotrain00018.avi"
+    video_input = load_and_transform_video_data(
+        video_paths=[video_path],
+        device="cpu",
+    )
+    pass

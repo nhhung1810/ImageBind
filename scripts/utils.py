@@ -66,7 +66,7 @@ def make_random_video_thumbnail(video_path: str):
     pass
 
 
-def save_image_tight(image_data: np.ndarray, output_path):
+def save_image_tight(image_data: np.ndarray, output_path: str):
     fig = plt.figure(frameon=False)
     ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
     ax.set_axis_off()
